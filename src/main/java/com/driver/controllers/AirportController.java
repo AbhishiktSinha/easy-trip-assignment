@@ -1,35 +1,104 @@
 package com.driver.controllers;
 
 
-import com.driver.model.Airport;
-import com.driver.model.City;
-import com.driver.model.Flight;
-import com.driver.model.Passenger;
+import com.driver.model.*;
+import com.driver.service.AirportService;
+import com.driver.service.BookingService;
+import com.driver.service.FlightService;
+import com.driver.service.PassengerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @RestController
 public class AirportController {
+
+    @Autowired
+    private AirportService airportService;
+    @Autowired
+    private FlightService flightService;
+    @Autowired
+    private BookingService bookingService;
+    @Autowired
+    private PassengerService passengerService;
+
+
     @PostMapping("/add_airport")
     public String addAirport(@RequestBody Airport airport){
 
         //Simply add airport details to your database
         //Return a String message "SUCCESS"
 
+        boolean success = airportService.createAirport(airport);
+        if (success) return "SUCCESS";
+        else return "FAILURE";
+    }
+
+
+    @PostMapping("/add-passenger")
+    public String addPassenger(@RequestBody Passenger passenger){
+
+        //Add a passenger to the database
+        //And return a "SUCCESS" message if the passenger has been added successfully.
+        boolean success = passengerService.add(passenger);
+        if (success) return "SUCCESS";
+        else return "FAILURE";
+    }
+
+
+    @PostMapping("/add-flight")
+    public String addFlight(@RequestBody Flight flight){
+
+        //Return a "SUCCESS" message string after adding a flight.
+        flightService.createFlight(flight);
         return "SUCCESS";
     }
+
+    @GetMapping("/flight")
+    public List<Flight> getFlights(@RequestParam(required=false) City fromCity, @RequestParam(required=false) City toCity, @RequestParam(required = false) Date date) {
+
+        return flightService.getFlights(fromCity, toCity, date);
+    }
+
+
+    @PostMapping("/book-a-ticket")
+    public String bookATicket(@RequestParam("flightId")Integer flightId,@RequestParam("passengerId")Integer passengerId){
+
+        //If the numberOfPassengers who have booked the flight is greater than : maxCapacity, in that case :
+        //return a String "FAILURE"
+        //Also if the passenger has already booked a flight then also return "FAILURE".
+        //else if you are able to book a ticket then return "SUCCESS"
+        boolean success = bookingService.createBooking(flightId, passengerId);
+        if (success) return "SUCCESS";
+        else return "FAILURE";
+    }
+
+    @GetMapping(value="/booking", params={"passengerId"})
+    public List<Booking> getPassengerBookings(@RequestParam Integer passengerId) {
+        return bookingService.getPassengerBookings(passengerId);
+    }
+
+
+    @PutMapping("/cancel-a-ticket")
+    public String cancelATicket(@RequestParam("flightId")Integer flightId,@RequestParam("passengerId")Integer passengerId){
+
+        //If the passenger has not booked a ticket for that flight or the flightId is invalid or in any other failure case
+        // then return a "FAILURE" message
+        // Otherwise return a "SUCCESS" message
+        // and also cancel the ticket that passenger had booked earlier on the given flightId
+        boolean success = bookingService.cancelBooking(passengerId, flightId);
+        if (success) return "SUCCESS";
+        else return "FAILURE";
+    }
+
 
     @GetMapping("/get-largest-aiport")
     public String getLargestAirportName(){
 
         //Largest airport is in terms of terminals. 3 terminal airport is larger than 2 terminal airport
-        //Incase of a tie return the Lexicographically smallest airportName
+        //In case of a tie return the Lexicographically smallest airportName
 
        return null;
     }
@@ -64,30 +133,6 @@ public class AirportController {
 
     }
 
-
-    @PostMapping("/book-a-ticket")
-    public String bookATicket(@RequestParam("flightId")Integer flightId,@RequestParam("passengerId")Integer passengerId){
-
-        //If the numberOfPassengers who have booked the flight is greater than : maxCapacity, in that case :
-        //return a String "FAILURE"
-        //Also if the passenger has already booked a flight then also return "FAILURE".
-        //else if you are able to book a ticket then return "SUCCESS"
-
-        return null;
-    }
-
-    @PutMapping("/cancel-a-ticket")
-    public String cancelATicket(@RequestParam("flightId")Integer flightId,@RequestParam("passengerId")Integer passengerId){
-
-        //If the passenger has not booked a ticket for that flight or the flightId is invalid or in any other failure case
-        // then return a "FAILURE" message
-        // Otherwise return a "SUCCESS" message
-        // and also cancel the ticket that passenger had booked earlier on the given flightId
-
-       return null;
-    }
-
-
     @GetMapping("/get-count-of-bookings-done-by-a-passenger/{passengerId}")
     public int countOfBookingsDoneByPassengerAllCombined(@PathVariable("passengerId")Integer passengerId){
 
@@ -95,12 +140,7 @@ public class AirportController {
        return 0;
     }
 
-    @PostMapping("/add-flight")
-    public String addFlight(@RequestBody Flight flight){
 
-        //Return a "SUCCESS" message string after adding a flight.
-       return null;
-    }
 
 
     @GetMapping("/get-aiportName-from-flight-takeoff/{flightId}")
@@ -123,16 +163,5 @@ public class AirportController {
 
         return 0;
     }
-
-
-    @PostMapping("/add-passenger")
-    public String addPassenger(@RequestBody Passenger passenger){
-
-        //Add a passenger to the database
-        //And return a "SUCCESS" message if the passenger has been added successfully.
-
-       return null;
-    }
-
 
 }

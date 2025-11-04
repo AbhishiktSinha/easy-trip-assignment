@@ -77,4 +77,15 @@ public class Flight {
         this.duration = duration;
     }
 
+    @Override
+    public String toString() {
+        return "Flight{" +
+                "flightId=" + flightId +
+                ", fromCity=" + fromCity +
+                ", toCity=" + toCity +
+                ", maxCapacity=" + maxCapacity +
+                ", flightDate=" + flightDate +
+                ", duration=" + duration +
+                '}';
+    }
 }
